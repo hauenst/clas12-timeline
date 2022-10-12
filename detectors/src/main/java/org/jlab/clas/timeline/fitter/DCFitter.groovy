@@ -62,12 +62,13 @@ class DCFitter{
 	    DataFitter.fit(f2,h1,"LQ")
 
         //refit using a double gaussian 
-        def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])+[amp2]*gaus(x,[mean],[sigma2])", -0.4, 0.4); 
+        def f1 = new F1D("fit:"+h1.getName(), "[amp]*gaus(x,[mean],[sigma])+[amp2]*gaus(x,[mean2],[sigma2])", -0.4, 0.4); 
         f1.setParameter(0, f2.getParameter(0));
-        f1.setParameter(1, f2.getParameter(1));
-        f1.setParameter(2, f2.getParameter(2)*0.75);
+        f1.setParameter(1, f2.getParameter(hMean));
+        f1.setParameter(2, f2.getParameter(2)*0.5);
         f1.setParameter(3, f2.getParameter(0)*0.15);
-        f1.setParameter(4, f2.getParameter(2));
+        f1.setParameter(4, f2.getParameter(1));      
+        f1.setParameter(5, f2.getParameter(2));
         f1.setRange(f2.getParameter(1)-3.0*f2.getParameter(2).abs(),f2.getParameter(1)+3.0*f2.getParameter(2).abs())
 
        

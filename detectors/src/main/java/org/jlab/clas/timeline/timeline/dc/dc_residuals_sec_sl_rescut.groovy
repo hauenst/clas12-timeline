@@ -12,6 +12,7 @@ def data = new ConcurrentHashMap()
 def processDirectory(dir, run) {
   def funclist = [[],[],[],[],[],[]]
   def meanlist = [[],[],[],[],[],[]]
+  def mean2list = [[],[],[],[],[],[]]  
   def sigmalist = [[],[],[],[],[],[]]
   def maxlist = [[],[],[],[],[],[]]
   def chi2list = [[],[],[],[],[],[]]
@@ -22,13 +23,24 @@ def processDirectory(dir, run) {
       h1.setTitleX("DC residuals per sector per superlayer with fitresidual cut (cm)")
       def f1 = DCFitter.doublegausfit(h1)
       funclist[sec].add(f1)
-      meanlist[sec].add(f1.getParameter(1))
+      //meanlist[sec].add(f1.getParameter(1))
       //smaller sigma is put into timelines
-      if (f1.getParameter(2).abs() <= f1.getParameter(4).abs()) {
+      //par0 amp smaller gaus
+      //par1 mean smaller gaus
+      //par2 sigma smaller gaus
+      //par3 amp wider gaus
+      //par4 mean wider gaus
+      //par5 sigma wider gaus
+      
+      if (f1.getParameter(2).abs() <= f1.getParameter(5).abs()) {
     	sigmalist[sec].add(f1.getParameter(2).abs()) 
+    	meanlist[sec].add(f1.getParameter(1))
+    	mean2list[sec].add(f1.getParameter(4))
       }
-      else {
-    	sigmalist[sec].add(f1.getParameter(4).abs()) 
+      else { //smaller and bigger gaus inverted
+    	sigmalist[sec].add(f1.getParameter(5).abs()) 
+    	meanlist[sec].add(f1.getParameter(4))
+    	mean2list[sec].add(f1.getParameter(1))
       }  
    	  maxlist[sec].add(h1.getDataX(h1.getMaximumBin()))
       chi2list[sec].add(f1.getChiSquare())
@@ -36,14 +48,14 @@ def processDirectory(dir, run) {
     }
   }
 
-  data[run] = [run:run, hlist:histlist, flist:funclist, mean:meanlist, sigma:sigmalist, max:maxlist, clist:chi2list]
+  data[run] = [run:run, hlist:histlist, flist:funclist, mean:meanlist, mean2:mean2list, sigma:sigmalist, max:maxlist, clist:chi2list]
 }
 
 
 
 def close() {
 
-  ['mean', 'sigma', 'max'].each{ name ->
+  ['mean', 'sigma', 'max', 'mean2'].each{ name ->
     TDirectory out = new TDirectory()
     out.mkdir('/timelines')
     (0..<6).each{ sec->
