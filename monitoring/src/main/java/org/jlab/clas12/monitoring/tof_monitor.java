@@ -49,6 +49,9 @@ public class tof_monitor {
 	public H1F[][] DC_residuals_nocut, DC_time_nocut;	
 	public H2F[][] DC_residuals_trkDoca_rescut;
 	public H1F[][] DC_residuals_rescut, DC_time_rescut;
+    public H2F DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl;
+    public H2F DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl;
+    public H1F DC_jitterdist;
 	public F1D[][] f_time_invertedS;
 
 	public float p1a_counter_thickness, p1b_counter_thickness, p2_counter_thickness; 
@@ -154,6 +157,31 @@ public class tof_monitor {
 		DC_time_odd = new H1F[6][6];
 		DC_time_rescut = new H1F[6][6];
 		DC_time_nocut = new H1F[6][6];
+		//DC jitter histograms, distributions of hits for jitter 0, 1 and 2 and for even and odd event timestamps for each sector/Superlayer
+		DC_jitterzero_sec_sl = new H2F("DC_jitterzero_sec_sl","DC_jitterzero_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_jitterzero_sec_sl.setTitle("jitter 0 hits per sector and sl");
+		DC_jitterzero_sec_sl.setTitleX("sector");
+		DC_jitterzero_sec_sl.setTitleY("superlayer");
+		DC_jitterone_sec_sl = new H2F("DC_jitterone_sec_sl","DC_jitterone_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_jitterone_sec_sl.setTitle("jitter 1 hits per sector and sl");
+		DC_jitterone_sec_sl.setTitleX("sector");
+		DC_jitterone_sec_sl.setTitleY("superlayer");
+		DC_jittertwo_sec_sl = new H2F("DC_jittertwo_sec_sl","DC_jittertwo_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_jittertwo_sec_sl.setTitle("jitter 2 hits per sector and sl");
+		DC_jittertwo_sec_sl.setTitleX("sector");
+		DC_jittertwo_sec_sl.setTitleY("superlayer");
+		DC_hits_even_ts_sec_sl = new H2F("DC_hits_even_ts_sec_sl","DC_hits_even_ts_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_hits_even_ts_sec_sl.setTitle("hits per sector and sl for even time stamps");
+		DC_hits_even_ts_sec_sl.setTitleX("sector");
+		DC_hits_even_ts_sec_sl.setTitleY("superlayer");
+		DC_hits_odd_ts_sec_sl = new H2F("DC_hits_odd_ts_sec_sl","DC_hits_odd_ts_sec_sl",6,0.5,6.5,6,0.5,6.5);
+		DC_hits_odd_ts_sec_sl.setTitle("hits per sector and sl for odd time stamps");
+		DC_hits_odd_ts_sec_sl.setTitleX("sector");
+		DC_hits_odd_ts_sec_sl.setTitleY("superlayer");
+		DC_jitterdist = new H1F("DC_jitterdist","DC_jitterdist",13,-6.5,6.5);
+		DC_jitterdist.setTitle("Hits with different jitters");
+		DC_jitterdist.setTitleX("jitter");
+		
 		f_time_invertedS = new F1D[6][6];
 
 		mean_tdiff = new float[6];
@@ -352,6 +380,7 @@ public class tof_monitor {
 			float timeResidual = DCB.getFloat("timeResidual",r);
 			float dDoca = DCB.getFloat("dDoca",r);
 			float time = DCB.getFloat("time",r);
+			int jitter = DCB.getInt("jitter");
 			double betacutvalue = 0.9;
 			double fitresidualcut = 1000; //microns
 			
@@ -387,14 +416,29 @@ public class tof_monitor {
 				{
 					DC_residuals_trkDoca[s][sl].fill(trkDoca,timeResidual+dDoca);
 					DC_residuals[s][sl].fill(timeResidual+dDoca);
-					DC_time[s][sl].fill(time);	
+					DC_time[s][sl].fill(time);
+					DC_jitterdist.fill(jitter);
+					
 					
 					if( timestamp%2 == 0) {//even time stamps
 						DC_time_even[s][sl].fill(time);	
+						//sector and superlayer need to go from 1-6
+						DC_hits_even_ts_sec_sl.fill(sec+1,sl+1);
+						if (jitter == 0) {
+							DC_jitterzero_sec_sl.fill(sec+1,sl+1);
+						}
+						if (jitter == 2 || jitter == -2) {
+							DC_jittertwo_sec_sl.fill(sec+1,sl+1);
+						}
 					}
 					else {//odd time stamps
 						DC_time_odd[s][sl].fill(time);	
+						//sector and superlayer need to go from 1-6
+						DC_hits_odd_ts_sec_sl.fill(sec+1,sl+1);
+						if (jitter == 1 || jitter == -1) {
+							DC_jitterone_sec_sl.fill(sec+1,sl+1);
 						}
+					}
 				//Apply also fitresidual cut, factor 0.0001 to convert to cm from microns
 					if (DCB.getFloat("fitResidual",r) < 0.0001 * fitresidualcut) {
 						DC_residuals_trkDoca_rescut[s][sl].fill(trkDoca,timeResidual+dDoca);
@@ -963,6 +1007,8 @@ public class tof_monitor {
 			dirout.addDataSet(DC_residuals_trkDoca_rescut[s][sl],DC_time_rescut[s][sl]);
 			dirout.addDataSet(DC_residuals_trkDoca_nocut[s][sl],DC_time_nocut[s][sl]);
 		}
+		dirout.addDataSet(DC_jitterzero_sec_sl, DC_jitterone_sec_sl, DC_jittertwo_sec_sl);
+		dirout.addDataSet(DC_hits_even_ts_sec_sl, DC_hits_odd_ts_sec_sl,DC_jitterdist);
 		if(write_volatile)if(runNum>0)dirout.writeFile("/volatile/clas12/rga/spring18/plots"+runNum+"/out_TOF_"+runNum+".hipo");
 
 		if(!write_volatile){
