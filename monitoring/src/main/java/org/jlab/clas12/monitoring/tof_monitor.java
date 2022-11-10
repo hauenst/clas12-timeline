@@ -380,7 +380,7 @@ public class tof_monitor {
 			float timeResidual = DCB.getFloat("timeResidual",r);
 			float dDoca = DCB.getFloat("dDoca",r);
 			float time = DCB.getFloat("time",r);
-			int jitter = DCB.getInt("jitter");
+			int jitter = DCB.getInt("jitter",r);
 			double betacutvalue = 0.9;
 			double fitresidualcut = 1000; //microns
 			
@@ -423,20 +423,20 @@ public class tof_monitor {
 					if( timestamp%2 == 0) {//even time stamps
 						DC_time_even[s][sl].fill(time);	
 						//sector and superlayer need to go from 1-6
-						DC_hits_even_ts_sec_sl.fill(sec+1,sl+1);
+						DC_hits_even_ts_sec_sl.fill(s+1,sl+1);
 						if (jitter == 0) {
-							DC_jitterzero_sec_sl.fill(sec+1,sl+1);
+							DC_jitterzero_sec_sl.fill(s+1,sl+1);
 						}
 						if (jitter == 2 || jitter == -2) {
-							DC_jittertwo_sec_sl.fill(sec+1,sl+1);
+							DC_jittertwo_sec_sl.fill(s+1,sl+1);
 						}
 					}
 					else {//odd time stamps
 						DC_time_odd[s][sl].fill(time);	
 						//sector and superlayer need to go from 1-6
-						DC_hits_odd_ts_sec_sl.fill(sec+1,sl+1);
+						DC_hits_odd_ts_sec_sl.fill(s+1,sl+1);
 						if (jitter == 1 || jitter == -1) {
-							DC_jitterone_sec_sl.fill(sec+1,sl+1);
+							DC_jitterone_sec_sl.fill(s+1,sl+1);
 						}
 					}
 				//Apply also fitresidual cut, factor 0.0001 to convert to cm from microns
