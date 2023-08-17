@@ -1,8 +1,12 @@
-#!/usr/bin/bash
+#!/bin/bash
 
-cd monitoring
+set -e
+
+d="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
+cd $d/../monitoring
 mvn package
 cd -
-cd detectors
+cd $d/../detectors
 mvn package
 cd -

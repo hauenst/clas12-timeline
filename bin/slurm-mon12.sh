@@ -5,10 +5,10 @@ BINDIR="`dirname $0`"
 MONDIR="`realpath $BINDIR/..`"
 JARPATH="$MONDIR/monitoring/target/clas12-monitoring-v0.0-alpha.jar"
 
-[[ ! -f $JARPATH ]] && echo "---- [ERROR] Problem with jar file for clas12_monitoring package --------" && echo && exit
+[[ ! -f $JARPATH ]] && echo "---- [ERROR] Problem with jar file for clas12_monitoring package --------" >&2 && echo && exit 100
 
 # test if there is a version name
-echo $1 | grep -q "/" && echo "---- [ERROR] version name must not contain / -------" && echo && exit
+echo $1 | grep -q "/" && echo "---- [ERROR] version name must not contain / -------" >&2 && echo && exit 100
 
 ver=$1
 shift
@@ -23,8 +23,13 @@ do
 
 run=`basename $rdir | grep -m1 -o "[0-9][0-9][0-9][0-9][0-9][0-9]"`
 [[ -z $run ]] && continue
-echo "Submitting the job for run $run"
 irun=$((10#$run))
+
+[[ -e plots/plots${irun} ]] && echo "------ [WARNING] skipping run ${irun} because the directory plots/plots${irun} already exists" && continue
+
+echo "Submitting the job for run $run"
+
+mkdir plots/plots${irun}
 
 max_num_events=100000000
 
@@ -53,7 +58,7 @@ sbatch << END_OF_SBATCH
 
 source /group/clas12/packages/setup.sh
 module load clas12/pro
-module switch clas12/3.2
+module switch clas12/pro
 
 realpath $rdir/* > plots/"$irun".input
 

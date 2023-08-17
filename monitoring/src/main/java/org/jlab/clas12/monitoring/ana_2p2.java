@@ -68,6 +68,7 @@ public class ana_2p2 {
                         read.close();
                 }catch(IOException e){
                         e.printStackTrace();
+                        System.exit(100);
                 }
 		int progresscount=0;int filetot = toProcessFileNames.size();
 		long startTime = System.currentTimeMillis();
@@ -135,7 +136,7 @@ public class ana_2p2 {
 		//ana_band.plot();
 		ana_band.write();
 		//ana_rich.plot();
-		ana_rich.FillFWHMHistogram();
+		ana_rich.postProcess();
 		ana_rich.write();
 		//ana_deuteron.plot();
         }
